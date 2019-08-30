@@ -1,8 +1,9 @@
 <template>
-  <v-flex pa-3 class="display-flex flex-wrap" v-if="!noresults">
+  <v-flex class="display-flex flex-wrap product-list" v-if="!noresults">
     <v-flex
-      xs4
-      sm3
+      xs6
+      sm4
+      md3
       lg2
       xl1
       pa-2
@@ -10,9 +11,11 @@
       :key="product._id"
       class="display-flex"
     >
-      <v-flex pa-3 class="product">
+      <v-flex pa-3 class="product display-flex flex-column">
         <v-flex class="display-flex align-center">
-          <h3 class="product-name">{{ product.name }}</h3>
+          <v-flex>
+            <h3 class="product-name">{{ product.name }}</h3>
+          </v-flex>
           <v-spacer></v-spacer>
           <v-btn
             v-if="isAFavorite(product._id)"
@@ -30,8 +33,12 @@
         <v-flex pa-3 mt-3>
           <v-img src="https://rootzwiki.com/public/style_images/RootzNew/nexus/default_product.png"></v-img>
         </v-flex>
-        <v-flex class="display-flex align-center" mt-3>
-          <span class="price-container">
+        <v-flex class="display-flex align-center justify-self-end" mt-3>
+          <span v-if="product.discountPrice" class="price-container-discount">
+            <span>{{ product.discountPrice }} kr</span>
+          </span>
+          <span v-if="product.discountPrice" class="old-price">{{ product.price }} kr</span>
+          <span v-else class="price-container">
             <span>{{ product.price }} kr</span>
           </span>
           <v-spacer></v-spacer>
@@ -54,7 +61,6 @@ const API =
 
 export default Vue.component("ProductList", {
   name: "ProductList",
-
   props: {
     products: { type: Array },
     noresults: { type: Boolean },
@@ -102,5 +108,30 @@ export default Vue.component("ProductList", {
   border-radius: 7px;
   color: white;
   font-weight: 700;
+}
+.price-container-discount {
+  background-color: #ff5252;
+  padding: 5px 10px;
+  border-radius: 7px;
+  color: white;
+  font-weight: 700;
+}
+.old-price {
+  margin-left: 15px;
+  position: relative;
+}
+.old-price:before {
+  position: absolute;
+  content: "";
+  left: -10%;
+  top: 45%;
+  right: -10%;
+  border-top: 3px solid #ff5252;
+  border-color: #ff5252;
+  -webkit-transform: rotate(-16deg);
+  -moz-transform: rotate(-16deg);
+  -ms-transform: rotate(-16deg);
+  -o-transform: rotate(-16deg);
+  transform: rotate(-16deg);
 }
 </style>

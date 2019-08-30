@@ -14,15 +14,16 @@ const initDatabase = () => {
 };
 
 const Product = mongoose.model("Product", {
-  name: String,
+  name: { type: String, required: true },
   price: Number,
+  discountPrice: Number,
 });
 
 const User = mongoose.model("User", {
-  name: String,
-  email: String,
-  favorites: Array,
-  googleId: String,
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  favorites: { type: Array, default: [] },
+  googleId: { type: String, required: true },
 });
 
 const getProducts = async () => {

@@ -2,12 +2,14 @@ version: "3"
 
 services:
   client:
+    container_name: "client"
     build: ./client
     ports:
       - 8080:8080
     volumes:
       - ./client:/app
   server:
+    container_name: "server"
     build: ./server
     links:
       - mongodb
@@ -28,4 +30,5 @@ services:
       - ./usr/local/var/mongodb:/data/db
     ports:
       - 27017:27017
-    command: ["mongod", "--logpath", "/dev/null"]
+    # command: ["mongod", "--logpath", "/dev/null"]
+    command: ["mongod"]

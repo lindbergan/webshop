@@ -52,7 +52,6 @@ app.post("/tokensignin", (req, res, next) => {
         registerUser({
           name: payload.name,
           email: payload.email,
-          favorites: [],
           googleId: userGoogleId,
         }).then(regUser => {
           res.send({
