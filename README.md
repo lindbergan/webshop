@@ -19,34 +19,6 @@ Simple fullstack application to show off some front end & back end skills.
 - docker-compose
 - vue-cli
 
----
+## Screenshots
 
-## [Client](/client/)
-
-### Project setup
-
-```
-yarn install
-```
-
-### Compiles and hot-reloads for development
-
-```
-yarn dev
-```
-
----
-
-## [Server](/server/)
-
-### Project setup
-
-```
-yarn install
-```
-
-### Compiles and reloads for development
-
-```
-yarn dev
-```
+![Home](screens/home.png)
