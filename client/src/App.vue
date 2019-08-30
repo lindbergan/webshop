@@ -14,9 +14,19 @@
                 </v-flex>
               </template>
               <v-card>
-                <v-flex pa-3>
+                <v-flex pa-3 align-center class="display-flex flex-column profile-card">
                   <h1>{{ user.name }}</h1>
                   <h3>{{ user.email }}</h3>
+                  <v-flex mt-5>
+                    <v-img
+                      max-height="240"
+                      max-width="240"
+                      src="https://image.flaticon.com/icons/png/512/149/149071.png"
+                    ></v-img>
+                  </v-flex>
+                  <v-flex align-end justify-center class="display-flex">
+                    <v-btn @click="logout" x-large color="primary">Logout</v-btn>
+                  </v-flex>
                 </v-flex>
               </v-card>
             </v-dialog>
@@ -98,14 +108,23 @@ export default {
           this.user = res.data;
         })
         .catch(err => console.log(err));
+    },
+    logout() {
+      const authInstance = gapi.auth2.getAuthInstance();
+      authInstance.signOut().then(() => {
+        authInstance.disconnect();
+        this.user = undefined;
+        document.location = "http://localhost:8080";
+      });
+    },
+    renderGoogleSignIn() {
+      gapi.signin2.render("google-signin-button", {
+        onsuccess: this.onSignIn
+      });
     }
   },
   mounted() {
-    console.log(process.env.NODE_ENV, process.env.API_URL);
-
-    gapi.signin2.render("google-signin-button", {
-      onsuccess: this.onSignIn
-    });
+    this.renderGoogleSignIn();
     axios
       .get(`${API}/products/`)
       .then(res => (this.products = res.data))
@@ -122,5 +141,8 @@ export default {
 }
 .flex-column {
   flex-direction: column;
+}
+.profile-card {
+  min-height: 500px;
 }
 </style>

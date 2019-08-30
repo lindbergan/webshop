@@ -1,6 +1,15 @@
 <template>
   <v-flex pa-3 class="display-flex flex-wrap" v-if="!noresults">
-    <v-flex xs4 sm3 lg2 pa-2 v-for="product in products" :key="product._id">
+    <v-flex
+      xs4
+      sm3
+      lg2
+      xl1
+      pa-2
+      v-for="product in products"
+      :key="product._id"
+      class="display-flex"
+    >
       <v-flex pa-3 class="product">
         <v-flex class="display-flex align-center">
           <h3 class="product-name">{{ product.name }}</h3>
