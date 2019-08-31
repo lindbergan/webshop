@@ -37,7 +37,7 @@
       </span>
     </v-flex>
     <v-flex xs3 class="display-flex justify-end">
-      <v-btn color="primary" fab @click="openDrawer">
+      <v-btn color="primary" fab @click="openDrawer" v-if="!hideCart">
         <v-icon>shopping_cart</v-icon>
       </v-btn>
     </v-flex>
@@ -57,7 +57,8 @@ export default Vue.component("Header", {
   props: {
     user: { type: Object },
     cart: { type: Object },
-    drawer: { type: Boolean }
+    drawer: { type: Boolean },
+    hideCart: { type: Boolean }
   },
   data: () => ({
     showProfileDialog: false

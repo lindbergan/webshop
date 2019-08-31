@@ -44,7 +44,7 @@
       </v-list-item>
       <v-list-item>
         <v-list-item-content>
-          <v-btn block primary outlined depressed x-large>Checkout</v-btn>
+          <v-btn block primary outlined depressed x-large to="/checkout">Checkout</v-btn>
         </v-list-item-content>
       </v-list-item>
     </v-list>
@@ -84,7 +84,7 @@ export default Vue.component("CartDrawer", {
         item => item.product._id === product._id
       );
       if (index !== -1 && this.cartCopy.items[index].amount > 1) {
-        this.cartCopy.items[index].amount += 1;
+        this.cartCopy.items[index].amount -= 1;
       } else if (index !== -1) {
         this.cartCopy.items = this.cart.items.filter(
           item => item.product._id !== product._id

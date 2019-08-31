@@ -6,7 +6,7 @@
       :drawer="drawer"
       @show-snackbar="showSnackbar($event)"
       @change-drawer="drawer = !drawer;"
-      @update-user="user = $event"
+      @update-user="updateUser($event)"
     ></Header>
     <v-flex class="display-flex bg-white border-light" mt-5 justify-center px-5>
       <v-flex xs12 sm8 lg4 pa-3>
@@ -59,6 +59,7 @@ import axios from "axios";
 import ProductList from "./ProductList";
 import Header from "./Header";
 import CartDrawer from "./CartDrawer";
+import { mapState, mapActions } from "vuex";
 import { getDiscountPriceIfExists } from "../helpers/producthelpers";
 
 const API =
@@ -76,17 +77,13 @@ export default Vue.component("Home", {
   data: () => ({
     products: [],
     drawer: null,
-    cart: {
-      items: [],
-      totalCost: 0
-    },
     search: "",
-    user: undefined,
     timeout: 1500,
     snackbar: false,
     text: ""
   }),
   computed: {
+    ...mapState(["user", "cart"]),
     filteredProducts() {
       return this.products.filter(p =>
         p.name.toLowerCase().includes(this.search.toLowerCase())
@@ -105,23 +102,27 @@ export default Vue.component("Home", {
     }
   },
   methods: {
+    ...mapActions(["updateCart", "updateUser"]),
     addProduct(product) {
-      let index = this.cart.items.findIndex(
+      let cartCopy = this.cart;
+
+      let index = cartCopy.items.findIndex(
         item => item.product._id === product._id
       );
       if (index !== -1) {
-        this.cart.items[index].amount += 1;
+        cartCopy.items[index].amount += 1;
       } else {
-        this.cart.items.push({
+        cartCopy.items.push({
           product,
           amount: 1
         });
       }
-      this.cart.totalCost += this.getDiscountPriceIfExists(product);
-      this.cart.totalCost = parseFloat(
-        parseFloat(this.cart.totalCost).toFixed(2)
+      cartCopy.totalCost += this.getDiscountPriceIfExists(product);
+      cartCopy.totalCost = parseFloat(
+        parseFloat(cartCopy.totalCost).toFixed(2)
       );
-      localStorage.setItem("cart", JSON.stringify(this.cart));
+      localStorage.setItem("cart", JSON.stringify(cartCopy));
+      this.updateCart(cartCopy);
       this.showSnackbar("Product added to cart");
     },
     showSnackbar(text) {
@@ -134,15 +135,14 @@ export default Vue.component("Home", {
     getLastCartIfExists() {
       let cart = localStorage.getItem("cart");
       if (cart) {
-        this.cart = JSON.parse(cart);
-        this.cart.totalCost = parseFloat(
-          parseFloat(this.cart.totalCost).toFixed(2)
-        );
+        cart = JSON.parse(cart);
+        cart.totalCost = parseFloat(parseFloat(cart.totalCost).toFixed(2));
+        this.updateCart(cart);
       } else {
-        this.cart = {
+        this.updateCart({
           items: [],
           totalCost: 0
-        };
+        });
       }
     }
   },

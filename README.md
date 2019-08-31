@@ -23,3 +23,4 @@ Simple fullstack application to show off some front end & back end skills.
 
 ![Home](screens/home.png)
 ![Cart](screens/cart.png)
+![Checkout](screens/checkout.png)
