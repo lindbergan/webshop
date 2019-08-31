@@ -38,7 +38,7 @@
         </span>
       </v-flex>
       <v-flex xs3 class="display-flex justify-end">
-        <v-btn color="primary" fab>
+        <v-btn color="primary" fab @click="openDrawer">
           <v-icon>shopping_cart</v-icon>
         </v-btn>
       </v-flex>
@@ -55,19 +55,82 @@
       </v-flex>
     </v-flex>
     <v-flex pa-5 mt-5 class="bg-white border-light">
-      <ProductList :user="user" :noresults="noResults" :products="filteredProducts"></ProductList>
+      <v-navigation-drawer v-model="drawer" app temporary right class="cart-drawer">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>
+              <h1>Cart</h1>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider></v-divider>
+        <v-list two-line subheader v-if="cart.items.length > 0">
+          <v-subheader inset>Items</v-subheader>
+          <v-list-item v-for="item in cart.items" :key="item.title">
+            <v-list-item-avatar>
+              <v-img
+                src="https://rootzwiki.com/public/style_images/RootzNew/nexus/default_product.png"
+              ></v-img>
+            </v-list-item-avatar>
+            <v-list-item-content>
+              <v-list-item-title>{{ item.product.name }}</v-list-item-title>
+              <v-list-item-subtitle>
+                x{{ item.amount }}
+                {{ getDiscountPriceIfExists(item.product) }} kr
+                <span
+                  v-if="item.product.discountPrice"
+                  class="overcrossed"
+                >{{ item.product.price}} kr</span>
+              </v-list-item-subtitle>
+            </v-list-item-content>
+            <v-list-item-action>
+              <v-btn icon @click="removeProduct(item.product)">
+                <v-icon color="red">remove_circle_outline</v-icon>
+              </v-btn>
+            </v-list-item-action>
+          </v-list-item>
+          <v-divider inset class="cart-divier"></v-divider>
+          <v-subheader inset>Total cost</v-subheader>
+          <v-list-item>
+            <v-list-item-content>
+              <v-list-item-title>
+                <v-flex class="display-flex" align-center justify-center>
+                  <span class="total-cost">{{ cart.totalCost }} kr</span>
+                </v-flex>
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-content>
+              <v-btn block primary outlined depressed x-large>Checkout</v-btn>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
+      </v-navigation-drawer>
+      <ProductList
+        @add-product="addProduct($event)"
+        :user="user"
+        :noresults="noResults"
+        :products="filteredProducts"
+      ></ProductList>
     </v-flex>
     <v-flex pa-3 class="display-flex align-center justify-center" v-if="noResults">
       <h1>No results...</h1>
     </v-flex>
     <v-flex pa-3 mt-5 class="display-flex flex-wrap bg-white border-light" v-if="user">
       <v-flex px-3 xs12 v-if="!noFavorites">
-        <h2>Your favorites</h2>
+        <h2>
+          Favorites
+          <v-icon color="red">favorites</v-icon>
+        </h2>
       </v-flex>
       <v-flex pa-2>
-        <ProductList :user="user" :products="favorites"></ProductList>
+        <ProductList @add-product="addProduct($event)" :user="user" :products="favorites"></ProductList>
       </v-flex>
     </v-flex>
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      <span>{{ text }}</span>
+    </v-snackbar>
   </v-flex>
 </template>
 <script>
@@ -87,9 +150,17 @@ export default Vue.component("Home", {
   },
   data: () => ({
     products: [],
+    cart: {
+      items: [],
+      totalCost: 0
+    },
     search: "",
     showProfileDialog: false,
-    user: undefined
+    user: undefined,
+    drawer: null,
+    timeout: 1500,
+    snackbar: false,
+    text: ""
   }),
   computed: {
     filteredProducts() {
@@ -133,6 +204,73 @@ export default Vue.component("Home", {
       gapi.signin2.render("google-signin-button", {
         onsuccess: this.onSignIn
       });
+    },
+    addProduct(product) {
+      let index = this.cart.items.findIndex(
+        item => item.product._id === product._id
+      );
+      if (index !== -1) {
+        this.cart.items[index].amount += 1;
+      } else {
+        this.cart.items.push({
+          product,
+          amount: 1
+        });
+      }
+      this.cart.totalCost += this.getDiscountPriceIfExists(product);
+      this.cart.totalCost = parseFloat(
+        parseFloat(this.cart.totalCost).toFixed(2)
+      );
+      localStorage.setItem("cart", JSON.stringify(this.cart));
+      this.showSnackbar("Product added to cart");
+    },
+    removeProduct(product) {
+      let index = this.cart.items.findIndex(
+        item => item.product._id === product._id
+      );
+      if (index !== -1 && this.cart.items[index].amount > 1) {
+        this.cart.items[index].amount += 1;
+      } else if (index !== -1) {
+        this.cart.items = this.cart.items.filter(
+          item => item.product._id !== product._id
+        );
+      }
+      this.cart.totalCost -= this.getDiscountPriceIfExists(product);
+      this.cart.totalCost = parseFloat(
+        parseFloat(this.cart.totalCost).toFixed(2)
+      );
+      localStorage.setItem("cart", JSON.stringify(this.cart));
+      this.showSnackbar("Product removed from cart");
+    },
+    showSnackbar(text) {
+      this.text = text;
+      this.snackbar = true;
+    },
+    getDiscountPriceIfExists(product) {
+      return product.discountPrice !== undefined
+        ? parseFloat(parseFloat(product.discountPrice).toFixed(2))
+        : parseFloat(parseFloat(product.price).toFixed(2));
+    },
+    getLastCartIfExists() {
+      let cart = localStorage.getItem("cart");
+      if (cart) {
+        this.cart = JSON.parse(cart);
+        this.cart.totalCost = parseFloat(
+          parseFloat(this.cart.totalCost).toFixed(2)
+        );
+      } else {
+        this.cart = {
+          items: [],
+          totalCost: 0
+        };
+      }
+    },
+    openDrawer() {
+      if (this.cart.items.length > 0) {
+        this.drawer = !this.drawer;
+      } else {
+        this.showSnackbar("Cart is empty");
+      }
     }
   },
   mounted() {
@@ -141,6 +279,7 @@ export default Vue.component("Home", {
       .get(`${API}/products/`)
       .then(res => (this.products = res.data))
       .catch(err => console.log(err));
+    this.getLastCartIfExists();
   }
 });
 </script>
@@ -171,13 +310,34 @@ export default Vue.component("Home", {
   font-size: 22px;
   font-weight: 700;
   color: #333;
-  text-align: center;
-  border-bottom: 3px solid #666;
+  text-align: flex-start;
 }
 .bg-white {
   background-color: white;
 }
 .border-light {
   border: 1px solid #dedede !important;
+}
+.cart-drawer {
+  top: 66px !important;
+  width: 300px !important;
+}
+.cart-divier {
+  margin-left: 0 !important;
+  max-width: 100% !important;
+}
+.overcrossed {
+  text-decoration: line-through solid rgb(68, 68, 68);
+}
+.total-cost {
+  color: white;
+  background-color: lightblue;
+  border-radius: 4px;
+  height: 50px;
+  width: 100%;
+  text-align: center;
+  padding-top: 15px;
+  font-weight: 700;
+  font-size: 18px;
 }
 </style>

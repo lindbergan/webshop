@@ -22,3 +22,4 @@ Simple fullstack application to show off some front end & back end skills.
 ## Screenshots
 
 ![Home](screens/home.png)
+![Cart](screens/cart.png)

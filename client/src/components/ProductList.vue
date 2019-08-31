@@ -42,7 +42,7 @@
             <span>{{ product.price }} kr</span>
           </span>
           <v-spacer></v-spacer>
-          <v-btn color="primary" fab small>
+          <v-btn color="primary" fab small @click="addProduct(product)">
             <v-icon>add</v-icon>
           </v-btn>
         </v-flex>
@@ -81,11 +81,15 @@ export default Vue.component("ProductList", {
       if (this.user) {
         this.user.favorites = this.user.favorites.filter(i => i !== id);
       }
+      this.updateFavorites();
     },
     updateFavorites() {
       axios.put(`${API}/users/${this.user.id}`, {
         favorites: this.user.favorites
       });
+    },
+    addProduct(product) {
+      this.$emit("add-product", product);
     }
   }
 });
